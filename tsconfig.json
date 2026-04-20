@@ -11,8 +11,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+    "types": ["node", "jest"],
+    "isolatedModules": true
   },
-  "include": ["server/src/**/*"],
+  "include": ["server/src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }
