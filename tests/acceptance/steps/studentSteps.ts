@@ -23,12 +23,21 @@ Given('a student exists:', async function (data: any) {
 
 Given('the following students exist:', async function (data: any) {
   for (const row of data.rows()) {
-    const response = await this.api.post('/api/students', {
-      name: row[0],
-      cpf: row[1],
-      email: row[2]
-    });
-    this.createdStudents.push(response.data.id);
+    try {
+      const response = await this.api.post('/api/students', {
+        name: row[0],
+        cpf: row[1],
+        email: row[2]
+      });
+      this.createdStudents.push(response.data.id);
+    } catch (err: any) {
+      if (err.response?.status === 400 && err.response?.data?.error?.includes('already registered')) {
+        const existingStudent = (await this.api.get('/api/students')).data.find((s: any) => s.cpf === row[1]);
+        if (existingStudent) {
+          this.createdStudents.push(existingStudent.id);
+        }
+      }
+    }
   }
 });
 
