@@ -1,0 +1,21 @@
+{
+  "name": "experimento2",
+  "version": "1.0.0",
+  "description": "Experimento 2 da disciplina TALP1 2026.1",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js",
+    "cucumber": "cucumber-js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.8.1",
+    "@types/cucumber": "^6.0.1",
+    "@types/node": "^25.6.0",
+    "cucumber": "^6.0.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
