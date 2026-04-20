@@ -1,5 +1,6 @@
 import { Before, After, setWorldConstructor } from '@cucumber/cucumber';
 import axios from 'axios';
+import { spawn } from 'child_process';
 
 const API_URL = 'http://localhost:3001';
 

@@ -145,23 +145,19 @@ Then('the student should be updated', function () {
   }
 });
 
-Then('I should see {string} in the list', function (name: string) {
-  const data = this.lastResponse?.data || [];
-  const found = Array.isArray(data) ? data.find((s: any) => s.name === name) : null;
-  if (!found) {
-    throw new Error(`Expected name "${name}" in list`);
+Then('I should see {string} in the list', async function (name: string) {
+  let data = this.lastResponse?.data || [];
+  if (!Array.isArray(data) || data.length === 0) {
+    const classResponse = await this.api.get('/api/classes');
+    data = classResponse.data;
   }
-});
-
-Then('I should see "Advanced Math" in the list', async function () {
-  const updatedTopic = this.lastResponse?.data?.topic;
-  if (updatedTopic === 'Advanced Math') {
-    return;
+  if (!Array.isArray(data) || data.length === 0) {
+    const studentResponse = await this.api.get('/api/students');
+    data = studentResponse.data;
   }
-  const response = await this.api.get('/api/classes');
-  const found = response.data.find((c: any) => c.topic === 'Advanced Math');
+  const found = data.find((item: any) => item.name === name || item.topic === name);
   if (!found) {
-    throw new Error('Expected topic "Advanced Math" in list');
+    throw new Error(`Expected "${name}" in list`);
   }
 });
 
@@ -203,17 +199,5 @@ Then('only one student should exist', async function () {
   const response = await this.api.get('/api/students');
   if (response.data.length !== 1) {
     throw new Error('Expected only 1 student');
-  }
-});
-
-Then('I should see "John Updated" in the list', async function () {
-  const updatedName = this.lastResponse?.data?.name;
-  if (updatedName === 'John Updated') {
-    return;
-  }
-  const response = await this.api.get('/api/students');
-  const found = response.data.find((s: any) => s.name === 'John Updated');
-  if (!found) {
-    throw new Error('Expected name "John Updated" in list');
   }
 });
