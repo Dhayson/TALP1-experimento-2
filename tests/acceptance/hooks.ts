@@ -70,6 +70,8 @@ Before(async function () {
     await startServer();
     console.log('Server started');
   }
+
+  await this.api.post('/test/cleanup');
 });
 
 After(async function () {

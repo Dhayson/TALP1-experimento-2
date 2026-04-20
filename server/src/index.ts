@@ -7,6 +7,7 @@ import studentRoutes from './routes/students';
 import classRoutes from './routes/classes';
 import testRoutes from './routes/tests';
 import { checkAndSendDailyEmail } from './services/emailService';
+import { StudentsDB, ClassesDB, TestsDB, ResultsDB, EmailTrackingDB } from './services/dataStore';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,6 +36,15 @@ app.use(express.json());
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.post('/test/cleanup', (req, res) => {
+  StudentsDB.saveAll([]);
+  ClassesDB.saveAll([]);
+  TestsDB.saveAll([]);
+  ResultsDB.saveAll([]);
+  EmailTrackingDB.save({ lastSentDate: '', changes: [] });
+  res.json({ status: 'cleaned' });
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
