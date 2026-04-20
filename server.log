@@ -1,0 +1,9 @@
+
+> experimento2@1.0.0 start
+> ts-node server/src/index.ts
+
+(node:44865) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/dhay/Documents/Agents/Experimento2/server/src/index.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/dhay/Documents/Agents/Experimento2/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Server running on port 3001
