@@ -31,7 +31,10 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3002'],
+  credentials: true
+}));
 app.use(express.json());
 
 app.get('/health', (req, res) => {
