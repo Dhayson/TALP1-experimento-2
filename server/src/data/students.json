@@ -1,14 +1,1 @@
-[
-  {
-    "id": "a22d3968-19b5-4513-8304-87da183e1fae",
-    "name": "John Doe",
-    "cpf": "123.456.789-00",
-    "email": "john@example.com"
-  },
-  {
-    "id": "ae48fc16-61e9-4dbc-8e3c-a6c742d598cb",
-    "name": "string",
-    "cpf": "111.222.333-44",
-    "email": "string@s.com"
-  }
-]
+[]

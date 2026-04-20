@@ -6,13 +6,13 @@ Given('the system is running', async function () {
 });
 
 Given('there are no students registered', async function () {
-  const response = await this.api.get('/students');
+  const response = await this.api.get('/api/students');
   if (response.status !== 200) throw new Error('Failed to get students');
 });
 
 Given('a student exists:', async function (data: any) {
   const student = data.rows()[0];
-  const response = await this.api.post('/students', {
+  const response = await this.api.post('/api/students', {
     name: student[0],
     cpf: student[1],
     email: student[2]
@@ -23,7 +23,7 @@ Given('a student exists:', async function (data: any) {
 
 Given('the following students exist:', async function (data: any) {
   for (const row of data.rows()) {
-    const response = await this.api.post('/students', {
+    const response = await this.api.post('/api/students', {
       name: row[0],
       cpf: row[1],
       email: row[2]
@@ -60,13 +60,13 @@ Given('I have student data with invalid email:', async function (data: any) {
 });
 
 When('I view the student list', async function () {
-  const response = await this.api.get('/students');
+  const response = await this.api.get('/api/students');
   this.lastResponse = response;
 });
 
 When('I add the student', async function () {
   try {
-    const response = await this.api.post('/students', this.pendingData);
+    const response = await this.api.post('/api/students', this.pendingData);
     if (response.status === 201) {
       this.createdStudents.push(response.data.id);
     }
@@ -79,13 +79,13 @@ When('I add the student', async function () {
 
 When('I edit the student\'s name to {string}', async function (name: string) {
   const studentId = this.createdStudents[0];
-  const response = await this.api.put(`/students/${studentId}`, { name });
+  const response = await this.api.put(`/api/students/${studentId}`, { name });
   this.lastResponse = response;
 });
 
 When('I delete the student', async function () {
   const studentId = this.createdStudents[0];
-  const response = await this.api.delete(`/students/${studentId}`);
+  const response = await this.api.delete(`/api/students/${studentId}`);
   this.createdStudents.shift();
   this.lastResponse = response;
 });
@@ -153,7 +153,7 @@ Then('the student should not be saved', function () {
 });
 
 Then('only one student should exist', async function () {
-  const response = await this.api.get('/students');
+  const response = await this.api.get('/api/students');
   if (response.data.length !== 1) {
     throw new Error('Expected only 1 student');
   }
