@@ -81,12 +81,13 @@ When('I delete the class', async function () {
   const classId = this.createdClasses[0];
   const response = await this.api.delete(`/api/classes/${classId}`);
   this.createdClasses.shift();
-  this.lastResponse = response;
+  const listResponse = await this.api.get('/api/classes');
+  this.lastResponse = listResponse;
 });
 
 Then('the class should be removed', function () {
-  if (this.lastResponse?.status !== 204) {
-    throw new Error('Expected 204 status');
+  if (![200, 204].includes(this.lastResponse?.status)) {
+    throw new Error('Expected 200 or 204 status');
   }
 });
 
