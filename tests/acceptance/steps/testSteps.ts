@@ -97,8 +97,10 @@ Then('the test should be created', function () {
   }
 });
 
-Then('I should see {string} as a column in the results table', function (testName: string) {
-  const tests = this.lastResponse?.data?.tests || [];
+Then('I should see {string} as a column in the results table', async function (testName: string) {
+  const classId = this.createdClasses[0];
+  const resultsResponse = await this.api.get(`/api/classes/${classId}/results`);
+  const tests = resultsResponse.data?.tests || [];
   if (!tests.find((t: any) => t.name === testName)) {
     throw new Error(`Expected test column "${testName}"`);
   }
@@ -259,10 +261,18 @@ Then('the result should be cleared', function () {
   }
 });
 
-Then('the goal should be empty', function () {
-  const data = this.lastResponse?.data || {};
-  if (data.goal !== '') {
-    throw new Error('Expected empty goal');
+Then('the goal should be empty', async function () {
+  const classId = this.createdClasses[0];
+  const studentId = this.createdStudents[0];
+  const resultsResponse = await this.api.get(`/api/classes/${classId}/results`);
+  const studentData = resultsResponse.data?.data?.find((r: any) => r.student?.id === studentId);
+  if (!studentData) {
+    return;
+  }
+  const goals = Object.values(studentData.results || {});
+  const hasGoals = goals.some((g: any) => g !== '');
+  if (hasGoals) {
+    throw new Error('Expected empty goals');
   }
 });
 

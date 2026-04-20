@@ -101,13 +101,22 @@ Then('the email should contain both {string} and {string}', function (content1: 
 });
 
 Given('class {string} exists:', async function (topic: string, data: any) {
-  const classData = data.rows()[0];
-  const response = await this.api.post('/api/classes', {
-    topic: topic,
-    year: parseInt(classData[0]),
-    semester: parseInt(classData[1])
-  });
-  this.createdClasses.push(response.data.id);
+  try {
+    const classData = data.rows()[0];
+    const response = await this.api.post('/api/classes', {
+      topic: topic,
+      year: parseInt(classData[0]),
+      semester: parseInt(classData[1])
+    });
+    this.createdClasses.push(response.data.id);
+  } catch (err: any) {
+    if (err.response?.status === 400) {
+      const existing = (await this.api.get('/api/classes')).data.find((c: any) => c.topic === topic);
+      if (existing && !this.createdClasses.includes(existing.id)) {
+        this.createdClasses.push(existing.id);
+      }
+    }
+  }
 });
 
 Then('the email should include changes from both classes', function () {

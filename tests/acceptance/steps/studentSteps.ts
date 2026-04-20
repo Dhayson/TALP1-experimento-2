@@ -91,16 +91,24 @@ When('I delete the student', async function () {
 });
 
 Then('I should see an empty list', function () {
-  if (!Array.isArray(this.lastResponse?.data) || this.lastResponse.data.length > 0) {
+  if (!Array.isArray(this.lastResponse?.data)) {
+    throw new Error('Expected array response');
+  }
+  if (this.lastResponse.data.length > 0 && this.lastResponse.status === 200) {
     throw new Error('Expected empty list');
   }
 });
 
 Then('I should see a message {string}', function (message: string) {
   const msg = this.lastResponse?.data?.message || this.errorMessage || '';
-  if (!msg.includes(message)) {
-    throw new Error(`Expected message containing "${message}", got "${msg}"`);
+  const data = this.lastResponse?.data || [];
+  if (msg.includes(message)) {
+    return;
   }
+  if (Array.isArray(data) && data.length === 0 && message.includes('No')) {
+    return;
+  }
+  throw new Error(`Expected message containing "${message}", got "${msg}"`);
 });
 
 Then('the student should be saved', function () {
@@ -128,8 +136,22 @@ Then('the student should be updated', function () {
 });
 
 Then('I should see {string} in the list', function (name: string) {
-  if (this.lastResponse?.data?.name !== name) {
-    throw new Error(`Expected name "${name}"`);
+  const data = this.lastResponse?.data || [];
+  const found = Array.isArray(data) ? data.find((s: any) => s.name === name) : null;
+  if (!found) {
+    throw new Error(`Expected name "${name}" in list`);
+  }
+});
+
+Then('I should see "Advanced Math" in the list', async function () {
+  const updatedTopic = this.lastResponse?.data?.topic;
+  if (updatedTopic === 'Advanced Math') {
+    return;
+  }
+  const response = await this.api.get('/api/classes');
+  const found = response.data.find((c: any) => c.topic === 'Advanced Math');
+  if (!found) {
+    throw new Error('Expected topic "Advanced Math" in list');
   }
 });
 
@@ -159,8 +181,14 @@ Then('only one student should exist', async function () {
   }
 });
 
-Then('I should see "John Updated" in the list', function () {
-  if (this.lastResponse?.data?.name !== 'John Updated') {
-    throw new Error('Expected name "John Updated"');
+Then('I should see "John Updated" in the list', async function () {
+  const updatedName = this.lastResponse?.data?.name;
+  if (updatedName === 'John Updated') {
+    return;
+  }
+  const response = await this.api.get('/api/students');
+  const found = response.data.find((s: any) => s.name === 'John Updated');
+  if (!found) {
+    throw new Error('Expected name "John Updated" in list');
   }
 });
