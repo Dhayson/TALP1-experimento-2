@@ -184,6 +184,21 @@ Then('the student should not be saved', function () {
   }
 });
 
+When('I add another student with the same CPF:', async function (data: any) {
+  const student = data.rows()[0];
+  try {
+    const response = await this.api.post('/api/students', {
+      name: student[0],
+      cpf: student[1],
+      email: student[2]
+    });
+    this.lastResponse = response;
+  } catch (err: any) {
+    this.lastResponse = err.response;
+    this.errorMessage = err.response?.data?.error;
+  }
+});
+
 Then('only one student should exist', async function () {
   const response = await this.api.get('/api/students');
   if (response.data.length !== 1) {

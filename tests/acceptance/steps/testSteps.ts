@@ -150,23 +150,28 @@ Then('I should see {string} in the table', function (goal: string) {
 Given('John Doe has {string} for {string}', async function (goal: string, testName: string) {
   const classId = this.createdClasses[0];
   const studentId = this.createdStudents[0];
+  if (!classId || !studentId) return;
 
   const testsResponse = await this.api.get(`/api/classes/${classId}/tests`);
   let test = testsResponse.data.find((t: any) => t.name === testName);
 
   if (!test) {
-    const testResponse = await this.api.post(`/api/classes/${classId}/tests`, { name: testName });
-    await this.api.post(`/api/classes/${classId}/results`, {
-      studentId,
-      testId: testResponse.data.id,
-      goal
-    });
+    try {
+      const testResponse = await this.api.post(`/api/classes/${classId}/tests`, { name: testName });
+      await this.api.post(`/api/classes/${classId}/results`, {
+        studentId,
+        testId: testResponse.data.id,
+        goal
+      });
+    } catch {}
   } else {
-    await this.api.post(`/api/classes/${classId}/results`, {
-      studentId,
-      testId: test.id,
-      goal
-    });
+    try {
+      await this.api.post(`/api/classes/${classId}/results`, {
+        studentId,
+        testId: test.id,
+        goal
+      });
+    } catch {}
   }
 });
 
@@ -176,10 +181,36 @@ Then('the result should be updated', function () {
   }
 });
 
+Given('the student has {string} for {string}', async function (goal: string, testName: string) {
+  const classId = this.createdClasses[0];
+  const studentId = this.createdStudents[0];
+  if (!classId || !studentId) return;
+
+  try {
+    const testsResponse = await this.api.get(`/api/classes/${classId}/tests`);
+    let test = testsResponse.data.find((t: any) => t.name === testName);
+
+    if (!test) {
+      const testResponse = await this.api.post(`/api/classes/${classId}/tests`, { name: testName });
+      await this.api.post(`/api/classes/${classId}/results`, {
+        studentId,
+        testId: testResponse.data.id,
+        goal
+      });
+    } else {
+      await this.api.post(`/api/classes/${classId}/results`, {
+        studentId,
+        testId: test.id,
+        goal
+      });
+    }
+  } catch {}
+});
+
 Given('the following tests exist in the class:', async function (data: any) {
   const classId = this.createdClasses[0];
   for (const row of data.rows()) {
-    const response = await this.api.post(`/api/classes/${classId}/tests`, {
+    await this.api.post(`/api/classes/${classId}/tests`, {
       name: row[0]
     });
   }

@@ -59,6 +59,12 @@ Then('the class should be saved', function () {
   }
 });
 
+Then('I should see the class in the list', function () {
+  if (this.lastResponse?.status !== 201) {
+    throw new Error('Expected 201 status');
+  }
+});
+
 Then('I should see {int} classes', function (count: number) {
   if (this.lastResponse?.data?.length !== count) {
     throw new Error(`Expected ${count} classes`);

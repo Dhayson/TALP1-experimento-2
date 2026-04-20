@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Student, EmailChange, EmailTracking } from '../types/index';
 import { EmailTrackingDB, StudentsDB } from '../services/dataStore';
-import { Test, ResultModel } from '../models/test';
+import { TestModel } from '../models/test';
 import { ClassModel } from '../models/class';
 
 export const trackChange = (
