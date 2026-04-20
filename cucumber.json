@@ -1,14 +1,7 @@
 {
   "default": {
-    "format": [
-      "summary",
-      "progress"
-    ],
-    "paths": [
-      "features/**/*.feature"
-    ],
-    "require": [
-      "src/**/*.ts"
-    ]
+    "format": ["summary", "progress"],
+    "paths": ["features/**/*.feature"],
+    "require": ["server/src/**/*.ts"]
   }
 }
