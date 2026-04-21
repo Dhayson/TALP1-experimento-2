@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getClasses, createClass, updateClass, deleteClass, Class } from '../api/classes';
+import { getClasses, createClass, updateClass, deleteClass, type Class } from '../api/classes';
 
 export function ClassesPage() {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -8,10 +8,6 @@ export function ClassesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Class | null>(null);
   const [form, setForm] = useState({ topic: '', year: '', semester: '' });
-
-  useEffect(() => {
-    loadClasses();
-  }, []);
 
   const loadClasses = async () => {
     setLoading(true);
@@ -22,6 +18,11 @@ export function ClassesPage() {
       setLoading(false);
     }
   };
+
+
+  useEffect(() => {
+    loadClasses();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

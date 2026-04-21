@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { 
   getClass, getClassStudents, getClassTests, getClassResults, 
   createClassTest, deleteClassTest, setClassResult, deleteClassResult,
-  Class, Student, Test 
+  type Class, type Student, type Test 
 } from '../api/classes';
 
 export function ClassDetailPage() {
@@ -15,9 +15,6 @@ export function ClassDetailPage() {
   const [loading, setLoading] = useState(true);
   const [newTest, setNewTest] = useState('');
 
-  useEffect(() => {
-    if (id) loadData();
-  }, [id]);
 
   const loadData = async () => {
     setLoading(true);
@@ -41,6 +38,10 @@ export function ClassDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (id) loadData();
+  }, [id]);
 
   const handleAddTest = async (e: React.FormEvent) => {
     e.preventDefault();

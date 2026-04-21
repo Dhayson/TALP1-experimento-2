@@ -1,26 +1,25 @@
-import { useState, useEffect } from 'react';
-import { getStudents, createStudent, updateStudent, deleteStudent, Student } from '../api/students';
+import { use, Suspense, useState, useMemo } from 'react';
+import { getStudents, createStudent, updateStudent, deleteStudent, type Student } from '../api/students';
 
 export function StudentsPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  const studentsPromise = useMemo(() => {
+    return getStudents();
+  }, [refreshKey]);
+  
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StudentsList studentsPromise={studentsPromise} onRefresh={() => setRefreshKey(k => k + 1)} />
+    </Suspense>
+  );
+}
+
+function StudentsList({ studentsPromise, onRefresh }: { studentsPromise: Promise<Student[]>, onRefresh: () => void }) {
+  const students = use(studentsPromise);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Student | null>(null);
   const [form, setForm] = useState({ name: '', cpf: '', email: '' });
-
-  useEffect(() => {
-    loadStudents();
-  }, []);
-
-  const loadStudents = async () => {
-    setLoading(true);
-    try {
-      const data = await getStudents();
-      setStudents(data);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +32,9 @@ export function StudentsPage() {
       setShowModal(false);
       setEditing(null);
       setForm({ name: '', cpf: '', email: '' });
-      loadStudents();
+      onRefresh();
     } catch (err) {
-      alert('Error saving student');
+      alert(`Error saving student ${err}`);
     }
   };
 
@@ -43,7 +42,7 @@ export function StudentsPage() {
     if (!confirm('Delete this student?')) return;
     try {
       await deleteStudent(id);
-      loadStudents();
+      onRefresh();
     } catch {
       alert('Error deleting student');
     }
@@ -60,8 +59,6 @@ export function StudentsPage() {
     setForm({ name: '', cpf: '', email: '' });
     setShowModal(true);
   };
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <div>
