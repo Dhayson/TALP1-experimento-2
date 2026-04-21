@@ -20,12 +20,13 @@ export function ClassDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [refreshKey, setRefreshKey] = useState(0);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
-
+  /* eslint-disable react-hooks/exhaustive-deps */
   const classPromise = useMemo(() => getClass(id!), [id, refreshKey]);
   const studentsPromise = useMemo(() => getClassStudents(id!), [id, refreshKey]);
   const allStudentsPromise = useMemo(() => getAllStudents(), [refreshKey]);
   const testsPromise = useMemo(() => getClassTests(id!), [id, refreshKey]);
   const resultsPromise = useMemo(() => getClassResults(id!), [id, refreshKey]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const handleRefresh = useCallback(() => {
     setRefreshKey(k => k + 1);
@@ -139,6 +140,8 @@ function ClassDetailContent({
         <h1>{cls.topic} ({cls.year}.{cls.semester})</h1>
         <Link to="/classes" className="btn btn-secondary">Back to Classes</Link>
       </div>
+
+        <Link to={`/classes/${classId}/tests`} className="btn btn-primary">Manage Tests</Link>
 
       <TabNav
         tabs={[
