@@ -1,0 +1,23 @@
+{
+  "lastSentDate": "",
+  "changes": [
+    {
+      "id": "6fa54632-585d-4b7a-bc45-cd76159b7bd8",
+      "studentId": "3b2f6dff-396e-4168-b815-d30faa64263f",
+      "classId": "900f8c23-754b-46e3-95b3-cb68f025d478",
+      "testId": "7427e541-e131-4a6b-b3cb-6b1f715f7fe6",
+      "oldGoal": "",
+      "newGoal": "MANA",
+      "timestamp": "2026-04-21T04:19:44.210Z"
+    },
+    {
+      "id": "d0af241c-9430-4092-b512-958f4e92ea3c",
+      "studentId": "a8bf9106-193c-4d5b-a410-0471f37cd522",
+      "classId": "900f8c23-754b-46e3-95b3-cb68f025d478",
+      "testId": "7427e541-e131-4a6b-b3cb-6b1f715f7fe6",
+      "oldGoal": "",
+      "newGoal": "MPA",
+      "timestamp": "2026-04-21T04:19:45.845Z"
+    }
+  ]
+}
