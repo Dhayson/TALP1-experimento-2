@@ -1,87 +1,85 @@
-import { useState, useEffect } from 'react';
+import { use, Suspense, useState, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  getClass, getClassStudents, getClassTests, getClassResults, 
-  createClassTest, deleteClassTest, setClassResult, deleteClassResult,
-  type Class, type Student, type Test 
+import {
+  getClass,
+  getClassStudents,
+  getAllStudents,
+  enrollStudent,
+  unenrollStudent,
+  type Class,
+  type Student
 } from '../api/classes';
 
 export function ClassDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [cls, setCls] = useState<Class | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [tests, setTests] = useState<Test[]>([]);
-  const [results, setResults] = useState<Record<string, Record<string, string>>>({});
-  const [loading, setLoading] = useState(true);
-  const [newTest, setNewTest] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
 
+  const classPromise = useMemo(() => getClass(id!), [id, refreshKey]);
+  const studentsPromise = useMemo(() => getClassStudents(id!), [id, refreshKey]);
+  const allStudentsPromise = useMemo(() => getAllStudents(), [refreshKey]);
 
-  const loadData = async () => {
-    setLoading(true);
+  const handleRefresh = useCallback(() => {
+    setRefreshKey(k => k + 1);
+  }, []);
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ClassDetailContent
+        classPromise={classPromise}
+        studentsPromise={studentsPromise}
+        allStudentsPromise={allStudentsPromise}
+        showEnrollModal={showEnrollModal}
+        setShowEnrollModal={setShowEnrollModal}
+        onRefresh={handleRefresh}
+      />
+    </Suspense>
+  );
+}
+
+interface ClassDetailContentProps {
+  classPromise: Promise<Class>;
+  studentsPromise: Promise<Student[]>;
+  allStudentsPromise: Promise<Student[]>;
+  showEnrollModal: boolean;
+  setShowEnrollModal: (show: boolean) => void;
+  onRefresh: () => void;
+}
+
+function ClassDetailContent({
+  classPromise,
+  studentsPromise,
+  allStudentsPromise,
+  showEnrollModal,
+  setShowEnrollModal,
+  onRefresh
+}: ClassDetailContentProps) {
+  const cls = use(classPromise);
+  const enrolledStudents = use(studentsPromise);
+  const allStudents = use(allStudentsPromise);
+
+  const availableStudents = allStudents.filter(
+    s => !enrolledStudents.find(enrolled => enrolled.id === s.id)
+  );
+
+  const handleEnroll = async (studentId: string) => {
     try {
-      const [clsData, studentsData, testsData, resultsData] = await Promise.all([
-        getClass(id!),
-        getClassStudents(id!),
-        getClassTests(id!),
-        getClassResults(id!)
-      ]);
-      setCls(clsData);
-      setStudents(studentsData);
-      setTests(testsData);
-      
-      const resultsMap: Record<string, Record<string, string>> = {};
-      for (const row of resultsData.data) {
-        resultsMap[row.student.id] = row.results;
-      }
-      setResults(resultsMap);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (id) loadData();
-  }, [id]);
-
-  const handleAddTest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTest.trim()) return;
-    try {
-      await createClassTest(id!, newTest);
-      setNewTest('');
-      loadData();
+      await enrollStudent(cls.id, studentId);
+      onRefresh();
     } catch {
-      alert('Error adding test');
+      alert('Error enrolling student');
     }
   };
 
-  const handleDeleteTest = async (testId: string) => {
-    if (!confirm('Delete this test?')) return;
+  const handleUnenroll = async (studentId: string) => {
+    if (!confirm('Remove student from class?')) return;
     try {
-      await deleteClassTest(id!, testId);
-      loadData();
+      await unenrollStudent(cls.id, studentId);
+      onRefresh();
     } catch {
-      alert('Error deleting test');
+      alert('Error removing student');
     }
   };
-
-  const handleGoalChange = async (studentId: string, testId: string, goal: string) => {
-    try {
-      if (goal === '') {
-        await deleteClassResult(id!, studentId, testId);
-      } else {
-        const test = tests.find(t => t.id === testId);
-        if (!test) return;
-        await setClassResult(id!, studentId, testId, goal);
-      }
-      loadData();
-    } catch {
-      alert('Error saving result');
-    }
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (!cls) return <div>Class not found</div>;
 
   return (
     <div>
@@ -90,65 +88,94 @@ export function ClassDetailPage() {
         <Link to="/classes" className="btn btn-secondary">Back to Classes</Link>
       </div>
 
-      <form onSubmit={handleAddTest} style={{ marginBottom: '20px', display: 'flex', gap: '8px' }}>
-        <input 
-          value={newTest} 
-          onChange={e => setNewTest(e.target.value)} 
-          placeholder="New test name"
-          style={{ width: '200px' }}
-        />
-        <button type="submit" className="btn btn-primary">Add Test</button>
-      </form>
+      <div className="toolbar">
+        <h2>Enrolled Students ({enrolledStudents.length})</h2>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowEnrollModal(true)}
+          disabled={availableStudents.length === 0}
+        >
+          Enroll Student
+        </button>
+      </div>
 
-      {tests.length === 0 ? (
-        <div className="empty">No tests defined. Add a test above.</div>
+      {enrolledStudents.length === 0 ? (
+        <div className="empty">No students enrolled. Click "Enroll Student" to add.</div>
       ) : (
         <table>
           <thead>
             <tr>
-              <th>Student</th>
-              {tests.map(t => (
-                <th key={t.id}>
-                  {t.name}
-                  <button 
-                    className="btn btn-danger" 
-                    style={{ marginLeft: '8px', padding: '2px 6px', fontSize: '12px' }}
-                    onClick={() => handleDeleteTest(t.id)}
-                  >
-                    ×
-                  </button>
-                </th>
-              ))}
+              <th>Name</th>
+              <th>CPF</th>
+              <th>Email</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {students.length === 0 ? (
-              <tr>
-                <td colSpan={tests.length + 1} className="empty">No students enrolled</td>
+            {enrolledStudents.map(s => (
+              <tr key={s.id}>
+                <td>{s.name}</td>
+                <td>{s.cpf}</td>
+                <td>{s.email}</td>
+                <td className="actions">
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleUnenroll(s.id)}
+                  >
+                    Remove
+                  </button>
+                </td>
               </tr>
-            ) : (
-              students.map(s => (
-                <tr key={s.id}>
-                  <td>{s.name}</td>
-                  {tests.map(t => (
-                    <td key={t.id}>
-                      <select
-                        className={`cell-select ${results[s.id]?.[t.id] || ''}`}
-                        value={results[s.id]?.[t.id] || ''}
-                        onChange={e => handleGoalChange(s.id, t.id, e.target.value)}
-                      >
-                        <option value="">-</option>
-                        <option value="MANA">MANA</option>
-                        <option value="MPA">MPA</option>
-                        <option value="MA">MA</option>
-                      </select>
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
+      )}
+
+      {showEnrollModal && (
+        <div className="modal-overlay" onClick={() => setShowEnrollModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Enroll Student</h2>
+            {availableStudents.length === 0 ? (
+              <p className="empty">All students already enrolled</p>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>CPF</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {availableStudents.map(s => (
+                    <tr key={s.id}>
+                      <td>{s.name}</td>
+                      <td>{s.cpf}</td>
+                      <td>{s.email}</td>
+                      <td>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleEnroll(s.id)}
+                        >
+                          Enroll
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div className="form-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowEnrollModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

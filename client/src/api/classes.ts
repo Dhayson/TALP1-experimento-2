@@ -28,6 +28,8 @@ export interface Result {
 
 export const getClasses = () => api.get<Class[]>('/api/classes').then(res => res.data);
 
+export const getAllStudents = () => api.get<Student[]>('/api/students').then(res => res.data);
+
 export const getClass = (id: string) => api.get<Class>(`/api/classes/${id}`).then(res => res.data);
 
 export const createClass = (data: Omit<Class, 'id'>) => api.post<Class>('/api/classes', data).then(res => res.data);
