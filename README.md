@@ -2,4 +2,5 @@
 
 ## Como executar
 Em um terminal, execute $npm run start
+
 Em outro terminal, execute $cd client & npm run dev
